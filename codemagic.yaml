@@ -2,23 +2,34 @@ workflows:
   upload_prebuilt_ipa:
     name: Upload Prebuilt IPA to TestFlight
     max_build_duration: 60
-    instance_type: mac_mini_m2
+    instance_type: mac_mini_m2  # macOS is better for iOS uploads
     environment:
       vars:
         APP_IDENTIFIER: co.median.ios.djyjab
-      xcode: latest
     scripts:
-      - name: Skip build (we already have the IPA)
-        script: echo "Using prebuilt IPA, no Xcode build needed"
+      - name: Upload IPA to TestFlight
+        script: |
+          # Install fastlane if not available
+          gem install fastlane
+          
+          # Create minimal Fastfile in current directory
+          cat > Fastfile << 'EOL'
+          default_platform(:ios)
+          platform :ios do
+            lane :upload do
+              pilot(
+                username: "soluservant@gmail.com",
+                app_identifier: "co.median.ios.djyjab",
+                ipa: "$(pwd)/fastlane/App.ipa",
+                skip_waiting_for_build_processing: true
+              )
+            end
+          end
+          EOL
+          
+          # Run fastlane
+          fastlane upload
     artifacts:
-      - fastlane/App.ipa # Codemagic will look for the IPA here for publishing
-    publishing:
-      app_store_connect:
-        api_key: $APP_STORE_CONNECT_PUBLISHER_PRIVATE_KEY
-        key_id: 2UMQG6769T
-        issuer_id: eff8f8f4-ea88-4b9f-a226-d1db218abb59
-        # Configuration related to TestFlight
-        submit_to_testflight: true
-        submit_to_app_store: false
+      - fastlane/App.ipa
 secrets:
-  - APP_STORE_CONNECT_PUBLISHER_PRIVATE_KEY
+  - FASTLANE_PASSWORD  # Add this secret in Codemagic for your Apple ID password

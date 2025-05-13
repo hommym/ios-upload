@@ -21,7 +21,8 @@ platform :ios do
     pilot(
       username: "soluservant@gmail.com",
       app_identifier: "co.median.ios.djyjab",
-      ipa: "fastlane/App.ipa"
+      ipa: "fastlane/App.ipa",  # Add this line with the correct path
+      skip_waiting_for_build_processing: true  # Optional: speeds up the process
     )
   end
 end
