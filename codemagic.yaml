@@ -15,11 +15,7 @@ workflows:
         api_key: $ASC_API_P8_KEY # Reference to the secret variable from Codemagic UI
         key_id: 2UMQG6769T
         issuer_id: eff8f8f4-ea88-4b9f-a226-d1db218abb59
-        method: api
-        ipa_path: fastlane/App.ipa
+        ipa_path: fastlane/App.ipa # Path to the IPA to upload
 
-# The secrets block below is optional if ASC_API_P8_KEY is a global secret
-# If ASC_API_P8_KEY is part of a group, you'd reference the group here.
-# If it's a standalone secret, this tells Codemagic to make it available.
 secrets:
   - ASC_API_P8_KEY # This just lists the name of the secret variable from UI
