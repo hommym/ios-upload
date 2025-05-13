@@ -12,7 +12,7 @@ workflows:
       - fastlane/App.ipa # Codemagic will look for the IPA here for publishing
     publishing:
       app_store_connect:
-        api_key: $ASC_API_P8_KEY_NEW
+        private_key: $ASC_API_P8_KEY_NEW
         key_id: 2UMQG6769T
         issuer_id: eff8f8f4-ea88-4b9f-a226-d1db218abb59
         # ipa_path has been removed
