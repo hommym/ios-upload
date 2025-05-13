@@ -2,34 +2,29 @@ workflows:
   upload_prebuilt_ipa:
     name: Upload Prebuilt IPA to TestFlight
     max_build_duration: 60
-    instance_type: mac_mini_m2  # macOS is better for iOS uploads
+    instance_type: mac_mini_m2
     environment:
       vars:
         APP_IDENTIFIER: co.median.ios.djyjab
     scripts:
+      - name: Install Apple Transporter
+        script: |
+          curl -s 'https://storage.googleapis.com/xcodeapps/apple_notarization_tools.zip' -o apple_notarization_tools.zip
+          unzip -q apple_notarization_tools.zip
+          
       - name: Upload IPA to TestFlight
         script: |
-          # Install fastlane if not available
-          gem install fastlane
+          # Copy IPA to expected location
+          cp fastlane/App.ipa .
           
-          # Create minimal Fastfile in current directory
-          cat > Fastfile << 'EOL'
-          default_platform(:ios)
-          platform :ios do
-            lane :upload do
-              pilot(
-                username: "soluservant@gmail.com",
-                app_identifier: "co.median.ios.djyjab",
-                ipa: "$(pwd)/fastlane/App.ipa",
-                skip_waiting_for_build_processing: true
-              )
-            end
-          end
-          EOL
-          
-          # Run fastlane
-          fastlane upload
+          # Use xcrun with altool to upload
+          xcrun altool --upload-app -f App.ipa \
+            --apiKey $API_KEY_ID \
+            --apiIssuer $API_ISSUER_ID \
+            --type ios
     artifacts:
       - fastlane/App.ipa
 secrets:
-  - FASTLANE_PASSWORD  # Add this secret in Codemagic for your Apple ID password
+  - API_KEY_ID      # Your App Store Connect API Key ID (2UMQG6769T)
+  - API_ISSUER_ID   # Your App Store Connect API Issuer ID
+  - API_KEY_CONTENT # Your private key content
