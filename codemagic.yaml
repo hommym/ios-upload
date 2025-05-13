@@ -5,19 +5,24 @@ workflows:
     environment:
       vars:
         APP_IDENTIFIER: co.median.ios.djyjab
-      node: none
-      ruby: none
-      cocoapods: false
     scripts:
       - name: Skip build (we already have the IPA)
         script: echo "Using prebuilt IPA, no Xcode build needed"
     artifacts:
       - fastlane/App.ipa
-    code_signing:
-      app_store_connect_api_key:
-        key_id: 2UMQG6769T
-        issuer_id: eff8f8f4-ea88-4b9f-a226-d1db218abb59 
-        key_file: fastlane/AuthKey_2UMQG6769T.p8
     publishing:
-      testflight:
+      app_store_connect:
+        api_key: AppStoreConnectAPIKey
         ipa_path: fastlane/App.ipa
+
+secrets:
+  AppStoreConnectAPIKey:
+    key_id: 2UMQG6769T
+    issuer_id: eff8f8f4-ea88-4b9f-a226-d1db218abb59
+    key_content: |
+      -----BEGIN PRIVATE KEY-----
+      MIGTAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBHkwdwIBAQQg/rZZRtS4FP18ZytR
+      Io/anUu12hsAV+dL/IeEu26SPragCgYIKoZIzj0DAQehRANCAAR7EDUVsWmK3Gs1
+      mWAgyh1Uy23BL2g50w/cKkCtYlUODeOtVuCfj2L+Naq2Zr0X2sWUyfe9Pv8L+lkc
+      Ru2C9vtS
+      -----END PRIVATE KEY-----
