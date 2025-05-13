@@ -2,29 +2,44 @@ workflows:
   upload_prebuilt_ipa:
     name: Upload Prebuilt IPA to TestFlight
     max_build_duration: 60
-    instance_type: mac_mini_m2
+    instance_type: mac_mini_m2  # Using macOS instance which already has the required tools
     environment:
       vars:
         APP_IDENTIFIER: co.median.ios.djyjab
     scripts:
-      - name: Install Apple Transporter
-        script: |
-          curl -s 'https://storage.googleapis.com/xcodeapps/apple_notarization_tools.zip' -o apple_notarization_tools.zip
-          unzip -q apple_notarization_tools.zip
-          
       - name: Upload IPA to TestFlight
         script: |
-          # Copy IPA to expected location
-          cp fastlane/App.ipa .
+          # Save API key to a file
+          echo "$API_KEY_CONTENT" > key.p8
           
-          # Use xcrun with altool to upload
-          xcrun altool --upload-app -f App.ipa \
-            --apiKey $API_KEY_ID \
-            --apiIssuer $API_ISSUER_ID \
+          # Set proper permissions
+          chmod 600 key.p8
+          
+          # Verify the IPA file exists
+          if [ ! -f "fastlane/App.ipa" ]; then
+            echo "Error: IPA file not found at fastlane/App.ipa"
+            ls -la fastlane/
+            exit 1
+          fi
+          
+          # Use xcrun with altool to upload (using the key file)
+          xcrun altool --upload-app -f fastlane/App.ipa \
+            --apiKey "$API_KEY_ID" \
+            --apiIssuer "$API_ISSUER_ID" \
             --type ios
+          
+          # Check the result of the upload
+          UPLOAD_RESULT=$?
+          if [ $UPLOAD_RESULT -ne 0 ]; then
+            echo "Upload failed with exit code $UPLOAD_RESULT"
+            exit $UPLOAD_RESULT
+          fi
+          
+          # Clean up
+          rm key.p8
     artifacts:
       - fastlane/App.ipa
 secrets:
   - API_KEY_ID      # Your App Store Connect API Key ID (2UMQG6769T)
-  - API_ISSUER_ID   # Your App Store Connect API Issuer ID
+  - API_ISSUER_ID   # Your App Store Connect API Issuer ID (eff8f8f4-ea88-4b9f-a226-d1db218abb59)
   - API_KEY_CONTENT # Your private key content
