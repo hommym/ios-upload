@@ -2,20 +2,38 @@ workflows:
   upload_prebuilt_ipa:
     name: Upload Prebuilt IPA to TestFlight
     max_build_duration: 60
+    instance_type: mac_mini_m2  # Important for iOS uploads
     environment:
       vars:
         APP_IDENTIFIER: co.median.ios.djyjab
+      groups:
+        - Default  # Group containing your App Store credentials
     scripts:
       - name: Skip build (we already have the IPA)
         script: echo "Using prebuilt IPA, no Xcode build needed"
+      - name: Verify IPA Exists
+        script: |
+          if [ ! -f "fastlane/App.ipa" ]; then
+            echo "Error: IPA file not found at fastlane/App.ipa"
+            ls -la fastlane/ || echo "fastlane directory not found"
+            exit 1
+          else
+            echo "IPA file found at fastlane/App.ipa"
+            # Display basic info about the IPA
+            unzip -l fastlane/App.ipa | head -10
+          fi
     artifacts:
-      - fastlane/App.ipa # Codemagic will look for the IPA here for publishing
+      - fastlane/App.ipa
     publishing:
       app_store_connect:
-        api_key: $ASC_API_P8_KEY
+        # Reference secrets from your environment variables group
+        api_key: $APP_STORE_CONNECT_PRIVATE_KEY 
         key_id: 2UMQG6769T
         issuer_id: eff8f8f4-ea88-4b9f-a226-d1db218abb59
-        # ipa_path has been removed
-
-secrets:
-  - ASC_API_P8_KEY
+        
+        # TestFlight specific settings
+        submit_to_testflight: true
+       
+        
+        # Optional: App Store settings (only if you want to publish to App Store)
+        submit_to_app_store: false  # Change to true when ready for App Store
